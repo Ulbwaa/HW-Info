@@ -34,3 +34,17 @@ HW-Info дополняет информацию, выводимую neofetch, а
 Использование HW-Info как модуль предлагает еще одну функцию, вывод информации с заранее заданным шаблоном, в котором используется html разметка по данному принципу: `<b>Key</b>: <code>Value</code>`.
 
 Для этого необходимо импортировать модуль в ваш Python-скрипт используя `import hwinfo` и использовать функцию `hwinfo.hwinfo(htmlMarkup: bool)`, которая возвращает строку с собранными данными. 
+
+
+# Скриншоты
+
+Как отдельное приложение:
+
+<img src="https://i.imgur.com/vs7LTCQ.jpg" alt="HW-Info в качестве Python-модуля.">
+<p></p>
+
+Как Python-модуль:
+
+<img src="https://i.imgur.com/gQhdVs6.png" alt="HW-Info в качестве Python-модуля." height="550px">
+<p></p>
+(В данном случае HW-Info используется в <a href='https://t.me/QuotesAPI_bot'>Telegram-боте.</a>)
