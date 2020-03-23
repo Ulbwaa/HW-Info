@@ -18,7 +18,10 @@ class tools:
     @staticmethod
     def checkOutput(command: str):
         try:
-            return subprocess.check_output(command, shell=True, universal_newlines=True, stderr=subprocess.DEVNULL)
+            return subprocess.check_output(command, shell=True,
+                                           universal_newlines=True,
+                                           stderr=subprocess.DEVNULL)
+
         except subprocess.CalledProcessError:
             return False
 
@@ -57,6 +60,9 @@ def hwinfo(htmlMarkup=True):
                 elif j == 'Uptime':
                     fetch += f'\n{j}: {y}'
                     fetch += f'\nBoot Time: {getBootTime()}'
+
+                elif j == 'Host' and 'Hackintosh' in y:
+                    pass
 
                 else:
                     fetch += f'\n{j}: {y}'
