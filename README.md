@@ -39,12 +39,12 @@ HW-Info дополняет информацию, выводимую neofetch, а
 # Скриншоты
 
 Как отдельное приложение:
-
-<img src="https://i.imgur.com/vs7LTCQ.jpg" alt="HW-Info в качестве Python-модуля.">
-<p></p>
+<p align="center">
+    <img src="https://i.imgur.com/vs7LTCQ.jpg" alt="HW-Info в качестве Python-модуля.">
+</p>
 
 Как Python-модуль:
-
-<img src="https://i.imgur.com/gQhdVs6.png" alt="HW-Info в качестве Python-модуля." height="550px">
-<p></p>
+<p align="center">
+    <img src="https://i.imgur.com/gQhdVs6.png" alt="HW-Info в качестве Python-модуля." height="550px">
+</p>
 (В данном случае HW-Info используется в <a href='https://t.me/QuotesAPI_bot'>Telegram-боте.</a>)
