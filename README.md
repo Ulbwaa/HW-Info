@@ -36,6 +36,32 @@ HW-Info дополняет информацию, выводимую neofetch, а
 Для этого необходимо импортировать модуль в ваш Python-скрипт используя `import hwinfo` и использовать функцию `hwinfo.hwinfo(htmlMarkup: bool)`, которая возвращает строку с собранными данными. 
 
 
+# Пример использования
+
+Готовый кусок кода для использования в Telegram-ботах под управлением библиотеки <a href='https://pypi.org/project/aiogram/'>aiogram</a>:
+
+```python
+from aiogram import Bot, Dispatcher, executor, types
+import hwinfo
+
+bot = Bot(token='TOKEN')
+
+dp = Dispatcher(bot)
+
+@dp.message_handler(commands=['hwinfo', 'fetch', 'hw'])
+async def hw_info(message: types.Message):
+    text = '<b>Loading...</b>'
+    temp_message = await message.reply(text, parse_mode='html')
+    fetch = hwinfo.hwinfo(True)
+    return await temp_message.edit_text(fetch, parse_mode='html')
+
+if __name__ == '__main__':
+    hwinfo.tools.clearConsole()
+    print('Started!')
+    executor.start_polling(dp, skip_updates=True)
+```
+
+
 # Скриншоты
 
 Как отдельное приложение:
