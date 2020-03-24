@@ -45,6 +45,6 @@ HW-Info дополняет информацию, выводимую neofetch, а
 
 Как Python-модуль:
 <p align="center">
-    <img src="https://i.imgur.com/NBFMEoQ.png" alt="HW-Info в качестве Python-модуля." height="550px">
+    <img src="https://i.imgur.com/pLLnCvy.png" alt="HW-Info в качестве Python-модуля." height="550px">
 </p>
 <p align="center">(В данном случае HW-Info используется в <a href='https://t.me/QuotesAPI_bot'>Telegram-боте.</a>)</p>
