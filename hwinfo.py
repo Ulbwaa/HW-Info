@@ -137,7 +137,7 @@ def _java_version():
     JAVA_temp = tools.checkOutput(command)
 
     if JAVA_temp:
-        return JAVA_temp.split('\n')[0].split('.')[0]
+        return JAVA_temp.split('\n')[0]
     else:
         return False
 
