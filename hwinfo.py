@@ -4,7 +4,10 @@ import socket
 import subprocess
 import time
 
+import http.client
 import psutil
+
+version = '1.2-release'
 
 
 class tools:
@@ -55,7 +58,11 @@ def hwinfo(htmlMarkup=True):
 
                 elif j == 'Kernel':
                     fetch += f'\n{j}: {y}'
+                    fetch += f'\nGlobal IP: {_http_ip()}'
                     fetch += f'\nLocal IP: {_LocalIP()}'
+
+                    if _mother_board():
+                        fetch += f'\nMotherboard: {_mother_board()}'
 
                 elif j == 'Uptime':
                     fetch += f'\n{j}: {y}'
@@ -69,13 +76,21 @@ def hwinfo(htmlMarkup=True):
 
         fetch += f'\nPython version: {_python_version()}'
 
+        if _where_python():
+            fetch += f'\nPython path: {_where_python()}'
+
         if _java_version():
             fetch += f'\nJAVA version: {_java_version()}'
 
+        if _where_java():
+            fetch += f'\nJAVA path: {_where_java()}'
+
+        fetch += f'\nHW-Info version: {_hwinfo_version()}'
+
         for i in fetch.split('- \n')[1].split('\n'):
             if i != '' and i != ' ':
-                j = i.split(': ')[0]
-                y = i.split(': ')[1]
+                j = i.split(': ', maxsplit=1)[0]
+                y = i.split(': ', maxsplit=1)[1]
                 if htmlMarkup:
                     out += f'\n<b>{j}</b>: <code>{y}</code>'
 
@@ -140,6 +155,53 @@ def _java_version():
         return JAVA_temp.split('\n')[0]
     else:
         return False
+
+
+def _http_ip():
+    conn = http.client.HTTPConnection("ifconfig.me")
+    conn.request("GET", "/ip")
+    return conn.getresponse().read().decode('UTF8')
+
+
+def _hwinfo_version():
+    return version
+
+
+def _mother_board():
+    if psutil.WINDOWS:
+        command = 'wmic baseboard get Manufacturer'
+        mother = tools.checkOutput(command)
+
+        if mother:
+            manuf = mother.split('\n')[2]
+        else:
+            return False
+
+        command = 'wmic baseboard get product'
+        mother = tools.checkOutput(command)
+
+        if mother:
+            module = mother.split('\n')[2]
+        else:
+            return False
+
+        return manuf + ' ' + module
+    else:
+        return False
+
+
+def _where_python():
+    command = 'where python3'
+    output = tools.checkOutput(command)
+
+    return output
+
+
+def _where_java():
+    command = 'where java'
+    output = tools.checkOutput(command)
+
+    return output
 
 
 if __name__ == '__main__':
