@@ -202,7 +202,7 @@ def _where_python():
 
 def _where_java():
     command = 'where java'
-    output = tools.checkOutput(command).split('\n')[0]
+    output = tools.checkOutput(command)
 
     if output:
         return output.split('\n')[0]
