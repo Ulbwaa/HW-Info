@@ -192,14 +192,14 @@ def _mother_board():
 
 def _where_python():
     command = 'where python3'
-    output = tools.checkOutput(command)
+    output = tools.checkOutput(command).split('\n')[0]
 
     return output
 
 
 def _where_java():
     command = 'where java'
-    output = tools.checkOutput(command)
+    output = tools.checkOutput(command).split('\n')[0]
 
     return output
 
