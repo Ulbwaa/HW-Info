@@ -192,16 +192,22 @@ def _mother_board():
 
 def _where_python():
     command = 'where python3'
-    output = tools.checkOutput(command).split('\n')[0]
+    output = tools.checkOutput(command)
 
-    return output
+    if output:
+        return output.split('\n')[0]
+    else:
+        return False
 
 
 def _where_java():
     command = 'where java'
     output = tools.checkOutput(command).split('\n')[0]
 
-    return output
+    if output:
+        return output.split('\n')[0]
+    else:
+        return False
 
 
 if __name__ == '__main__':
