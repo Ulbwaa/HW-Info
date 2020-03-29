@@ -3,11 +3,15 @@ import platform
 import socket
 import subprocess
 import time
+import random
 
 import http.client
 import psutil
 
-version = '1.2-release'
+
+version = '1.3-release'
+git = 'https://github.com/Ulbwaa/HW-Info'
+projects = 'https://ulbwa.suicide.today/projects/'
 
 
 class tools:
@@ -29,7 +33,7 @@ class tools:
             return False
 
 
-def hwinfo(htmlMarkup=True):
+def hwinfo(htmlMarkup=True, showThreadsPercentage=True):
     if psutil.WINDOWS:
         command = 'powershell neofetch --stdout'
     else:
@@ -58,8 +62,15 @@ def hwinfo(htmlMarkup=True):
 
                 elif j == 'Kernel':
                     fetch += f'\n{j}: {y}'
-                    fetch += f'\nGlobal IP: {_http_ip()}'
-                    fetch += f'\nLocal IP: {_LocalIP()}'
+
+                    if _users():
+                        fetch += f'\nUsers: {_users()}'
+
+                    if not _IPs_Check():
+                        fetch += f'\nGlobal IP: {_http_ip()}'
+                        fetch += f'\nLocal IP: {_LocalIP()}'
+                    else:
+                        fetch += f'\nLocal / Global IP: {_http_ip()}'
 
                     if _mother_board():
                         fetch += f'\nMotherboard: {_mother_board()}'
@@ -87,6 +98,11 @@ def hwinfo(htmlMarkup=True):
 
         fetch += f'\nHW-Info version: {_hwinfo_version()}'
 
+        if showThreadsPercentage:
+            fetch += '\n'
+            for i, percentage in enumerate(psutil.cpu_percent(percpu=True)):
+                fetch += f'\nThread {i + 1} load: {round(percentage)}%'
+
         for i in fetch.split('- \n')[1].split('\n'):
             if i != '' and i != ' ':
                 j = i.split(': ', maxsplit=1)[0]
@@ -96,6 +112,15 @@ def hwinfo(htmlMarkup=True):
 
                 else:
                     out += f'\n{j}: {y}'
+            else:
+                out += '\n'
+
+        if htmlMarkup and random.randint(1, 3) == 3:
+            out += '\n\n<b>HW-Info</b> is an <b>open source project</b>. ' \
+                   'You can use this module in your projects by downloading it on <b>GitHub!</b> ' \
+                   f'Link to download source: <code>{git}</code>. ' \
+                   f'My other projects are available for review at the following link: ' \
+                   f'<code>{projects}</code>.'
 
         return out
     else:
@@ -103,6 +128,10 @@ def hwinfo(htmlMarkup=True):
             return '<b>Neofetch is not installed!</b>'
         else:
             return 'Neofetch is not installed!'
+
+
+def _IPs_Check():
+    return str(_LocalIP()) == str(_http_ip())
 
 
 def _LocalIP():
@@ -114,6 +143,22 @@ def _LocalIP():
         ip = '127.0.0.1'
 
     return str(ip)
+
+
+def _users():
+    try:
+        users = []
+
+        for user in psutil.users():
+            if str(user.name) not in users:
+                users.append(str(user.name))
+
+        if users == [] or len(users) <= 0:
+            return False
+    except (Exception, BaseException):
+        return False
+
+    return ', '.join(users)
 
 
 def _CPUArch():
@@ -213,6 +258,6 @@ def _where_java():
 if __name__ == '__main__':
     tools.clearConsole()
     print('loading...')
-    hw = hwinfo(False)
+    hw = hwinfo(False, False)
     tools.clearConsole()
     print(hw)
