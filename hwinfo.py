@@ -246,7 +246,7 @@ def _where_python():
         output = tools.checkOutput(command)
 
         if output:
-            return output.split('\n')[0]
+            return output.split('\n')[0].split(' ')[1]
         else:
             return False
 
@@ -262,7 +262,7 @@ def _where_java():
         output = tools.checkOutput(command)
 
         if output:
-            return output.split('\n')[0]
+            return output.split('\n')[0].split(' ')[1]
         else:
             return False
 
