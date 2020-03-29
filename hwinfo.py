@@ -9,7 +9,7 @@ import http.client
 import psutil
 
 
-version = '1.3-release'
+version = '1.3.1-release'
 git = 'https://github.com/Ulbwaa/HW-Info'
 projects = 'https://ulbwa.suicide.today/projects/'
 
@@ -242,7 +242,13 @@ def _where_python():
     if output:
         return output.split('\n')[0]
     else:
-        return False
+        command = 'whereis python3'
+        output = tools.checkOutput(command)
+
+        if output:
+            return output.split('\n')[0]
+        else:
+            return False
 
 
 def _where_java():
@@ -252,7 +258,13 @@ def _where_java():
     if output:
         return output.split('\n')[0]
     else:
-        return False
+        command = 'whereis java'
+        output = tools.checkOutput(command)
+
+        if output:
+            return output.split('\n')[0]
+        else:
+            return False
 
 
 if __name__ == '__main__':
