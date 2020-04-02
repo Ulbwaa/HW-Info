@@ -8,8 +8,9 @@ import random
 import http.client
 import psutil
 
+import speedtest as speed
 
-version = '1.3.1-release'
+version = '1.4-release'
 git = 'https://github.com/Ulbwaa/HW-Info'
 projects = 'https://ulbwa.suicide.today/projects/'
 
@@ -31,6 +32,34 @@ class tools:
 
         except subprocess.CalledProcessError:
             return False
+
+
+def speedtest(htmlMarkup=True):
+    tester = speed.Speedtest()
+    tester.get_best_server()
+    tester.download(threads=None)
+    tester.upload(threads=None)
+
+    download = round(tester.results.dict()["download"] / 2 ** 20)
+    upload = round(tester.results.dict()["upload"] / 2 ** 20)
+    ping = round(tester.results.dict()["ping"])
+    server = tester.results.dict()["server"]["country"] + ', ' + tester.results.dict()["server"]["name"]
+
+    output = 'HW-Info SpeedTester\n' \
+             '-------------------\n'
+
+    if htmlMarkup:
+        output += f'<b>Download</b>: <code>{download} MiB/s</code>\n' \
+                  f'<b>Upload</b>: <code>{upload} MiB/s</code>\n' \
+                  f'<b>Ping</b>: <code>{ping}ms</code>\n' \
+                  f'<b>Server</b>: <code>{server}</code>'
+    else:
+        output += f'Download: {download} MiB/s\n' \
+                  f'Upload: {upload} MiB/s\n' \
+                  f'Ping: {ping}ms\n' \
+                  f'Server: {server}'
+
+    return output
 
 
 def hwinfo(htmlMarkup=True, showThreadsPercentage=True):
@@ -273,3 +302,4 @@ if __name__ == '__main__':
     hw = hwinfo(False, False)
     tools.clearConsole()
     print(hw)
+    exit(0)

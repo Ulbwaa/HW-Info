@@ -18,6 +18,8 @@ HW-Info дополняет информацию, выводимую neofetch, а
 
 `python3 -m pip install psutil`
 
+`python3 -m pip install speedtest-cli`
+
 
 # Использование
 
@@ -48,12 +50,21 @@ bot = Bot(token='TOKEN')
 
 dp = Dispatcher(bot)
 
+
 @dp.message_handler(commands=['hwinfo', 'fetch', 'hw'])
 async def hw_info(message: types.Message):
     text = '<b>Loading...</b>'
     temp_message = await message.reply(text, parse_mode='html')
     fetch = hwinfo.hwinfo(True)
     return await temp_message.edit_text(fetch, parse_mode='html')
+
+@dp.message_handler(commands=['speedtest', 'hwinfo-speedtest', 'hw-speedtest'])
+async def hw_info(message: types.Message):
+    text = '<b>Loading...</b>'
+    temp_message = await message.reply(text, parse_mode='html')
+    speedtest = hwinfo.speedtest(True)
+    return await temp_message.edit_text(speedtest, parse_mode='html')
+
 
 if __name__ == '__main__':
     hwinfo.tools.clearConsole()
