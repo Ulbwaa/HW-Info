@@ -4,13 +4,16 @@ import socket
 import subprocess
 import time
 import random
+import asyncio
+import functools
 
 import http.client
 import psutil
 
 import speedtest as speed
 
-version = '1.4-release'
+_state = 'release'
+_version = ['1', '4', '2']
 git = 'https://github.com/Ulbwaa/HW-Info'
 projects = 'https://ulbwa.suicide.today/projects/'
 
@@ -33,8 +36,23 @@ class tools:
         except subprocess.CalledProcessError:
             return False
 
+    @staticmethod
+    def run_sync(func, *args, **kwargs):
+        """Run a non-async function in a new
+        thread and return an awaitable"""
+        return asyncio.get_event_loop()\
+            .run_in_executor(None,
+                             functools.partial(func,
+                                               *args,
+                                               **kwargs))
+    @staticmethod
+    def run_async(coro):
+        """Run an async function as a
+        non-async function, blocking till it's done"""
+        return asyncio.run(coro)
 
-def speedtest(htmlMarkup=True):
+
+def _speedtester(htmlMarkup=True):
     tester = speed.Speedtest()
     tester.get_best_server()
     tester.download(threads=None)
@@ -43,7 +61,7 @@ def speedtest(htmlMarkup=True):
     download = round(tester.results.dict()["download"] / 2 ** 20)
     upload = round(tester.results.dict()["upload"] / 2 ** 20)
     ping = round(tester.results.dict()["ping"])
-    server = tester.results.dict()["server"]["country"] + ', ' + tester.results.dict()["server"]["name"]
+    server = tester.results.dict()["server"]["country"] + ', ' + tester.results.dict()["server"]["name"]  # noqa
 
     output = 'HW-Info SpeedTester\n' \
              '-------------------\n'
@@ -62,7 +80,11 @@ def speedtest(htmlMarkup=True):
     return output
 
 
-def hwinfo(htmlMarkup=True, showThreadsPercentage=True):
+async def speedtest(htmlMarkup=True):
+    return await tools.run_sync(_speedtester, htmlMarkup)
+
+
+def _hwinfo(htmlMarkup=True, showThreadsPercentage=True):
     if psutil.WINDOWS:
         command = 'powershell neofetch --stdout'
     else:
@@ -159,6 +181,12 @@ def hwinfo(htmlMarkup=True, showThreadsPercentage=True):
             return 'Neofetch is not installed!'
 
 
+async def hwinfo(htmlMarkup=True, showThreadsPercentage=True):
+    return await tools.run_sync(_hwinfo,
+                                htmlMarkup,
+                                showThreadsPercentage)
+
+
 def _IPs_Check():
     return str(_LocalIP()) == str(_http_ip())
 
@@ -238,7 +266,7 @@ def _http_ip():
 
 
 def _hwinfo_version():
-    return version
+    return ".".join(_version) + "-{}".format(_state)
 
 
 def _mother_board():
@@ -298,8 +326,8 @@ def _where_java():
 
 if __name__ == '__main__':
     tools.clearConsole()
-    print('loading...')
-    hw = hwinfo(False, False)
+    print('Loading hwinfo...')
+    hw = tools.run_async(hwinfo(False, False))
     tools.clearConsole()
     print(hw)
     exit(0)
