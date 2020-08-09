@@ -91,7 +91,7 @@ async def speedtest(htmlMarkup=True):
     return await tools.run_sync(_speedtester, htmlMarkup)
 
 
-def _hwinfo(htmlMarkup:bool = True, showThreadsPercentage: bool = True, showIP: bool = True) -> str:  # noqa: e501
+def _hwinfo(htmlMarkup: bool = True, showThreadsPercentage: bool = True, showIP: bool = True) -> str:  # noqa: e501
     if psutil.WINDOWS:
         command = 'powershell neofetch --stdout'
     else:
