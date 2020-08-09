@@ -6,6 +6,8 @@ import time
 import random
 import asyncio
 import functools
+import sys
+from tempfile import gettempdir
 
 import http.client
 import psutil
@@ -13,7 +15,7 @@ import psutil
 import speedtest as speed
 
 _state = 'release'
-_version = ['1', '4', '2']
+_version = ['1', '4', '3']
 git = 'https://github.com/Ulbwaa/HW-Info'
 projects = 'https://ulbwa.suicide.today/projects/'
 
@@ -52,6 +54,11 @@ class tools:
         return asyncio.run(coro)
 
 
+class hwinfoError(Exception):
+    def __init__(self, text):
+        self.txt = text
+
+
 def _speedtester(htmlMarkup=True):
     tester = speed.Speedtest()
     tester.get_best_server()
@@ -84,104 +91,118 @@ async def speedtest(htmlMarkup=True):
     return await tools.run_sync(_speedtester, htmlMarkup)
 
 
-def _hwinfo(htmlMarkup=True, showThreadsPercentage=True):
+def _hwinfo(htmlMarkup:bool = True, showThreadsPercentage: bool = True, showIP: bool = True) -> str:  # noqa: e501
     if psutil.WINDOWS:
         command = 'powershell neofetch --stdout'
     else:
-        command = 'neofetch --stdout'
+        if 'aws' not in platform.platform():
+            command = 'neofetch --stdout'
+        else:
+            # Привет от детей хероку сука!!!
+            command = 'curl -Ls https://github.com/dylanaraps/neofetch/raw/master/neofetch | bash -s -- --stdout'  # noqa: e501
 
     output = tools.checkOutput(command)
 
-    if output:
-        fetch = output.split('- \n')[0] + '- '
-        out = output.split('- \n')[0] + '- '
+    try:
+        if output:
+            fetch = output.split('- \n')[0] + '- '
+            out = output.split('- \n')[0] + '- '
 
-        for i in output.split('- \n')[1].split('\n'):
-            if i != '' and i != ' ':
-                j = i.split(': ')[0]
-                y = i.split(': ')[1]
+            for i in output.split('- \n')[1].split('\n'):
+                if i != '' and i != ' ':
+                    j = i.split(': ')[0]
+                    y = i.split(': ')[1]
 
-                if j == 'CPU':
-                    fetch += f'\n{j}: {y}'
-                    fetch += f'\nCPU Load: {_CPULoad()}'
-                    fetch += f'\nCPU Architecture: {_CPUArch()}'
+                    if j == 'CPU':
+                        fetch += f'\n{j}: {y}'
+                        fetch += f'\nCPU Load: {_CPULoad()}'
+                        fetch += f'\nCPU Architecture: {_CPUArch()}'
 
-                elif j == 'Memory':
-                    fetch += f'\n{j}: {y}'
-                    fetch += f'\nSWAP: {_swap()}'
-                    fetch += f'\nStorage: {_storage()}'
+                    elif j == 'Memory':
+                        fetch += f'\n{j}: {y}'
+                        fetch += f'\nSWAP: {_swap()}'
+                        fetch += f'\nStorage: {_storage()}'
 
-                elif j == 'Kernel':
-                    fetch += f'\n{j}: {y}'
+                    elif j == 'Kernel':
+                        fetch += f'\n{j}: {y}'
 
-                    if _users():
-                        fetch += f'\nUsers: {_users()}'
+                        if _users():
+                            fetch += f'\nUsers: {_users()}'
 
-                    if not _IPs_Check():
-                        fetch += f'\nGlobal IP: {_http_ip()}'
-                        fetch += f'\nLocal IP: {_LocalIP()}'
+                        if showIP:
+                            if not _IPs_Check():
+                                fetch += f'\nGlobal IP: {_http_ip()}'
+                                fetch += f'\nLocal IP: {_LocalIP()}'
+                            else:
+                                fetch += f'\nLocal / Global IP: {_http_ip()}'
+
+                        if _mother_board():
+                            fetch += f'\nMotherboard: {_mother_board()}'
+
+                    elif j == 'Uptime':
+                        fetch += f'\n{j}: {y}'
+                        fetch += f'\nBoot Time: {_BootTime()}'
+
+                    elif j == 'Host' and 'Hackintosh' in y:
+                        pass
+
                     else:
-                        fetch += f'\nLocal / Global IP: {_http_ip()}'
+                        fetch += f'\n{j}: {y}'
 
-                    if _mother_board():
-                        fetch += f'\nMotherboard: {_mother_board()}'
+            fetch += f'\nPython version: {_python_version()}'
 
-                elif j == 'Uptime':
-                    fetch += f'\n{j}: {y}'
-                    fetch += f'\nBoot Time: {_BootTime()}'
+            if _where_python():
+                fetch += f'\nPython path: {_where_python()}'
 
-                elif j == 'Host' and 'Hackintosh' in y:
-                    pass
+            if _java_version():
+                fetch += f'\nJAVA version: {_java_version()}'
 
+            if _where_java():
+                fetch += f'\nJAVA path: {_where_java()}'
+
+            fetch += f'\nHW-Info version: {_hwinfo_version()}'
+
+            if showThreadsPercentage:
+                fetch += '\n'
+                for i, percentage in enumerate(psutil.cpu_percent(percpu=True)):
+                    fetch += f'\nThread {i + 1} load: {round(percentage)}%'
+
+            for i in fetch.split('- \n')[1].split('\n'):
+                if i != '' and i != ' ':
+                    j = i.split(': ', maxsplit=1)[0]
+                    y = i.split(': ', maxsplit=1)[1]
+                    if htmlMarkup:
+                        out += f'\n<b>{j}</b>: <code>{y}</code>'
+
+                    else:
+                        out += f'\n{j}: {y}'
                 else:
-                    fetch += f'\n{j}: {y}'
+                    out += '\n'
 
-        fetch += f'\nPython version: {_python_version()}'
+            if htmlMarkup and random.randint(1, 3) == 3:
+                out += '\n\n<b>HW-Info</b> is an <b>open source project</b>. ' \
+                    'You can use this module in your projects by downloading it on <b>GitHub!</b> ' \
+                    f'Link to download source: <code>{git}</code>. ' \
+                    f'My other projects are available for review at the following link: ' \
+                    f'<code>{projects}</code>.'
 
-        if _where_python():
-            fetch += f'\nPython path: {_where_python()}'
-
-        if _java_version():
-            fetch += f'\nJAVA version: {_java_version()}'
-
-        if _where_java():
-            fetch += f'\nJAVA path: {_where_java()}'
-
-        fetch += f'\nHW-Info version: {_hwinfo_version()}'
-
-        if showThreadsPercentage:
-            fetch += '\n'
-            for i, percentage in enumerate(psutil.cpu_percent(percpu=True)):
-                fetch += f'\nThread {i + 1} load: {round(percentage)}%'
-
-        for i in fetch.split('- \n')[1].split('\n'):
-            if i != '' and i != ' ':
-                j = i.split(': ', maxsplit=1)[0]
-                y = i.split(': ', maxsplit=1)[1]
-                if htmlMarkup:
-                    out += f'\n<b>{j}</b>: <code>{y}</code>'
-
-                else:
-                    out += f'\n{j}: {y}'
-            else:
-                out += '\n'
-
-        if htmlMarkup and random.randint(1, 3) == 3:
-            out += '\n\n<b>HW-Info</b> is an <b>open source project</b>. ' \
-                   'You can use this module in your projects by downloading it on <b>GitHub!</b> ' \
-                   f'Link to download source: <code>{git}</code>. ' \
-                   f'My other projects are available for review at the following link: ' \
-                   f'<code>{projects}</code>.'
-
-        return out
-    else:
-        if htmlMarkup:
-            return '<b>Neofetch is not installed!</b>'
+            return out
         else:
-            return 'Neofetch is not installed!'
+            if htmlMarkup:
+                return '<b>Neofetch is not installed!</b>'
+            else:
+                return 'Neofetch is not installed!'
+    except Exception as e:
+        if psutil.WINDOWS:
+            if htmlMarkup:
+                return '<b>Neofetch is not installed!</b>'
+            else:
+                return 'Neofetch is not installed!'
+        else:
+            raise hwinfoError(e)
 
 
-async def hwinfo(htmlMarkup=True, showThreadsPercentage=True):
+async def hwinfo(htmlMarkup: bool = True, showThreadsPercentage: bool = True, showIP: bool = True):
     return await tools.run_sync(_hwinfo,
                                 htmlMarkup,
                                 showThreadsPercentage)
@@ -245,8 +266,7 @@ def _storage():
 
 
 def _python_version():
-    return '{} ver. {}'.format(platform.python_implementation(),
-                               platform.python_version()).split('ver. ')[1]
+    return sys.version.split()[0]
 
 
 def _java_version():
@@ -254,7 +274,10 @@ def _java_version():
     JAVA_temp = tools.checkOutput(command)
 
     if JAVA_temp:
-        return JAVA_temp.split('\n')[0]
+        try:
+            return JAVA_temp.split('\n')[0]
+        except IndexError:
+            return False
     else:
         return False
 
@@ -293,19 +316,7 @@ def _mother_board():
 
 
 def _where_python():
-    command = 'where python3'
-    output = tools.checkOutput(command)
-
-    if output:
-        return output.split('\n')[0]
-    else:
-        command = 'whereis python3'
-        output = tools.checkOutput(command)
-
-        if output:
-            return output.split('\n')[0].split(' ')[1]
-        else:
-            return False
+    return sys.executable
 
 
 def _where_java():
@@ -313,21 +324,63 @@ def _where_java():
     output = tools.checkOutput(command)
 
     if output:
-        return output.split('\n')[0]
+        try:
+            return output.split('\n')[0]
+        except IndexError:
+            return False
     else:
         command = 'whereis java'
         output = tools.checkOutput(command)
 
         if output:
-            return output.split('\n')[0].split(' ')[1]
+            try:
+                return output.split('\n')[0].split(' ')[1]
+            except IndexError:
+                return False
         else:
             return False
+
+
+def _install_neofetch():
+    if psutil.WINDOWS:
+        from urllib.request import urlretrieve
+        SCOOP_INSTALLER = "https://me.rf0x3d.su/MzM4Mw%3D%3D%2A_%2A7e4d.ps1"
+        filename = gettempdir() + "install_scoop.ps1"
+        urlretrieve(SCOOP_INSTALLER,
+                    filename)
+        command = 'powershell neofetch --stdout'
+        print("Installing Scoop...")
+        output = tools.checkOutput(command)
+        if output:
+            print("Scoop installed!")
+        else:
+            raise hwinfoError("Something went wrong during Scoop installation")  # noqa: e501
+        command = 'powershell scoop install git neofetch'
+        print("Installing Neofetch...")
+        output = tools.checkOutput(command)
+        if output:
+            print("Neofetch installed!")
+        else:
+            raise hwinfoError("Something went wrong during Neofetch installation")  # noqa: e501
+        os.remove(filename)
+        return True
+    else:
+        return True
+
 
 
 if __name__ == '__main__':
     tools.clearConsole()
     print('Loading hwinfo...')
     hw = tools.run_async(hwinfo(False, False))
+    if hw == "Neofetch is not installed!" and psutil.WINDOWS:
+        install = input("Neofetch is not installed. Would you like to install him? (y/N)")
+        if install.lower() in ("y", "д", "1"):
+            installation = _install_neofetch()
+            if installation:
+                hw = tools.run_async(hwinfo(False, False))
+            else:
+                raise hwinfoError("Something went wrong during Neofetch installation")
     tools.clearConsole()
     print(hw)
     exit(0)
