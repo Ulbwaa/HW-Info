@@ -205,7 +205,8 @@ def _hwinfo(htmlMarkup:bool = True, showThreadsPercentage: bool = True, showIP: 
 async def hwinfo(htmlMarkup: bool = True, showThreadsPercentage: bool = True, showIP: bool = True):
     return await tools.run_sync(_hwinfo,
                                 htmlMarkup,
-                                showThreadsPercentage)
+                                showThreadsPercentage,
+                                showIP)
 
 
 def _IPs_Check():
