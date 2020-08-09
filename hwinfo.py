@@ -354,15 +354,11 @@ def _install_neofetch():
         output = tools.checkOutput(command)
         if output:
             print("Scoop installed!")
-        else:
-            raise hwinfoError("Something went wrong during Scoop installation")  # noqa: e501
         command = 'powershell scoop install git neofetch'
         print("Installing Neofetch...")
         output = tools.checkOutput(command)
         if output:
             print("Neofetch installed!")
-        else:
-            raise hwinfoError("Something went wrong during Neofetch installation")  # noqa: e501
         os.remove(filename)
         return True
     else:
