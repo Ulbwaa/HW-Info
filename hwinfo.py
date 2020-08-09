@@ -93,13 +93,13 @@ async def speedtest(htmlMarkup=True):
 
 def _hwinfo(htmlMarkup: bool = True, showThreadsPercentage: bool = True, showIP: bool = True) -> str:  # noqa: e501
     if psutil.WINDOWS:
-        command = 'powershell neofetch --stdout'
+        command = 'powershell neofetch --stdout --config none'
     else:
         if 'aws' not in platform.platform():
-            command = 'neofetch --stdout'
+            command = 'neofetch --stdout --config none'
         else:
             # Привет от детей хероку сука!!!
-            command = 'curl -Ls https://github.com/dylanaraps/neofetch/raw/master/neofetch | bash -s -- --stdout'  # noqa: e501
+            command = 'curl -Ls https://github.com/dylanaraps/neofetch/raw/master/neofetch | bash -s -- --stdout --config none'  # noqa: e501
 
     output = tools.checkOutput(command)
 
