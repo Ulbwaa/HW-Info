@@ -15,7 +15,7 @@ import psutil
 import speedtest as speed
 
 _state = 'release'
-_version = ['1', '4', '3']
+_version = ['1', '4', '4']
 git = 'https://github.com/Ulbwaa/HW-Info'
 projects = 'https://ulbwa.suicide.today/projects/'
 
@@ -52,6 +52,18 @@ class tools:
         """Run an async function as a
         non-async function, blocking till it's done"""
         return asyncio.run(coro)
+
+    @staticmethod
+    def remove_non_ASCII(text):
+        otpt_str = str()
+
+        for i in text:
+            num = ord(i)
+            if num >= 0:
+                if num <= 127:
+                    otpt_str = otpt_str + i
+
+        return otpt_str
 
 
 class hwinfoError(Exception):
@@ -113,15 +125,21 @@ def _hwinfo(htmlMarkup: bool = True, showThreadsPercentage: bool = True, showIP:
                     j = i.split(': ')[0]
                     y = i.split(': ')[1]
 
+                    if j == 'OS' and psutil.WINDOWS:
+                        fetch += f'\n{j}: {tools.remove_non_ASCII(y)}'
+                        continue
+
                     if j == 'CPU':
                         fetch += f'\n{j}: {y}'
                         fetch += f'\nCPU Load: {_CPULoad()}'
                         fetch += f'\nCPU Architecture: {_CPUArch()}'
+                        continue
 
                     elif j == 'Memory':
                         fetch += f'\n{j}: {y}'
                         fetch += f'\nSWAP: {_swap()}'
                         fetch += f'\nStorage: {_storage()}'
+                        continue
 
                     elif j == 'Kernel':
                         fetch += f'\n{j}: {y}'
@@ -139,15 +157,19 @@ def _hwinfo(htmlMarkup: bool = True, showThreadsPercentage: bool = True, showIP:
                         if _mother_board():
                             fetch += f'\nMotherboard: {_mother_board()}'
 
+                        continue
+
                     elif j == 'Uptime':
                         fetch += f'\n{j}: {y}'
                         fetch += f'\nBoot Time: {_BootTime()}'
+                        continue
 
                     elif j == 'Host' and 'Hackintosh' in y:
                         pass
 
                     else:
                         fetch += f'\n{j}: {y}'
+                        continue
 
             fetch += f'\nPython version: {_python_version()}'
 
@@ -192,6 +214,7 @@ def _hwinfo(htmlMarkup: bool = True, showThreadsPercentage: bool = True, showIP:
                 return '<b>Neofetch is not installed!</b>'
             else:
                 return 'Neofetch is not installed!'
+
     except Exception as e:
         if psutil.WINDOWS:
             if htmlMarkup:
